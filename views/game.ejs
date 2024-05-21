@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script src="/js/game.js" defer></script>
+    <title>Play</title>
+  </head>
+  <body>
+    <%- include("partials/header.ejs") %>
+    <div class="container">
+      <h2>Welcome, <%= user.name %></h2>
+      <% if(playersCount === 1){ %>
+      <h3>Waiting for another player...</h3>
+      <% } else { %>
+      <div class="grid">
+        <% for(let i = 0; i < 10; i++) { %> <% for(let j = 0; j < 10; j++) { %>
+        <div class="cell" data-x="<%= i %>" data-y="<%= j %>"></div>
+        <% } %> <% } %>
+      </div>
+      <% } %>
+    </div>
+  </body>
+</html>
