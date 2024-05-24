@@ -12,6 +12,7 @@ const { Server } = require("socket.io");
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 const mongoConnect = require("./mongoConnect");
+const Game = require("./models/game");
 mongoConnect();
 
 app = express();
@@ -19,18 +20,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-
-const server = http.createServer(app);
-const io = new Server(server);
-
-io.on("connection", (socket) => {
-  socket.on("move", ({ x, y }) => {
-    io.emit("move", { x, y });
-  });
-  socket.on("game", (game) => {
-    io.emit("game", game);
-  });
-});
 
 const store = new MongoDBStore({
   mongoUrl: process.env.MONGO_URI,
@@ -60,6 +49,19 @@ const LocalStrategy = require("passport-local").Strategy;
 passport.use(new LocalStrategy(User.authenticate()));
 
 app.use("/", require("./routes"));
+
+const server = http.createServer(app);
 server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}. http://localhost:${PORT}/`);
+});
+
+const io = new Server(server);
+
+io.on("connection", (socket) => {
+  socket.on("joinGame", ({ gameId }) => {
+    socket.join(gameId);
+  });
+  socket.on("game", ({ gameId, game }) => {
+    io.to(gameId).emit("game", game);
+  });
 });

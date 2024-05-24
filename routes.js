@@ -77,36 +77,76 @@ router.post("/register", (req, res) => {
 
 router.get("/game", async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
-
   const user = req.user;
   let game = await Game.findOne({
-    players: user._id,
     status: "ongoing",
-  }).populate("players");
+    $where: "this.players.length === 1",
+  });
 
-  if (!game) {
-    const existingGameWithOnePlayer = await Game.findOne({
-      status: "ongoing",
-      $where: "this.players.length === 1",
-    });
-
-    if (existingGameWithOnePlayer) {
-      // Add current user to the existing game
-      existingGameWithOnePlayer.players.push(user._id);
-      await existingGameWithOnePlayer.save();
-      game = existingGameWithOnePlayer;
-    } else {
-      // Create a new game with the current user
-      game = new Game({
-        players: [user._id],
-        grid: Array(10)
-          .fill()
-          .map(() => Array(10).fill(null)),
-      });
-      await game.save();
+  if (game) {
+    // Add current user to the existing game
+    if (game.players[0]._id.toString() === user._id.toString()) {
+      game = await game.populate("players");
+      return res.render("game", { user, game });
     }
+    game.players.push(user._id);
+    await game.save();
+    game = game;
+  } else {
+    // Create a new game with the current user
+    game = new Game({
+      players: [user._id],
+      grid: Array(10)
+        .fill()
+        .map(() => Array(10).fill({ monster: null })),
+    });
+    await game.save();
+    game = await Game.findById(game._id);
   }
-  res.render("game", { user, game });
+
+  if (game.players.length === 2) {
+    const monsterTypes = ["vampire", "werewolf", "ghost"];
+    // placing monsters for player 1
+    for (let i = 0; i < 5; i++) {
+      const row = 0;
+      const randomCol = Math.floor(Math.random() * 10);
+      if (!game.grid[row][randomCol].monster) {
+        const randomMonsterType =
+          monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
+        game.grid[row][randomCol].monster = {
+          type: randomMonsterType,
+          player: game.players[0]._id,
+        };
+      } else {
+        i--;
+      }
+    }
+
+    // placing monsters for player 2
+    for (let i = 0; i < 5; i++) {
+      const row = 9;
+      const randomCol = Math.floor(Math.random() * 10);
+      if (!game.grid[row][randomCol].monster) {
+        const randomMonsterType =
+          monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
+        game.grid[row][randomCol].monster = {
+          type: randomMonsterType,
+          player: game.players[1]._id,
+        };
+      } else {
+        i--;
+      }
+    }
+
+    // Determine turn
+    game.turn =
+      game.players[Math.floor(Math.random() * game.players.length)]._id;
+
+    await game.save();
+  }
+
+  game = await game.populate("players");
+  return res.render("game", { user, game });
 });
 
 module.exports = router;
