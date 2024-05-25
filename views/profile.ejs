@@ -1,0 +1,17 @@
+<html>
+  <%- include("partials/head.ejs") %>
+  <body>
+    <%- include("partials/header.ejs") %>
+    <div class="container">
+      <p>Profile</p>
+      <p>Name: <%= user.name %></p>
+      <p>Username: <%= user.username %></p>
+      <p>
+        Games completed: <%= user.gamesWon + user.gamesLost + user.gamesDrawn %>
+      </p>
+      <p>Games won: <%= user.gamesWon %></p>
+      <p>Games lost: <%= user.gamesLost %></p>
+      <p>Games drawn: <%= user.gamesDrawn %></p>
+    </div>
+  </body>
+</html>

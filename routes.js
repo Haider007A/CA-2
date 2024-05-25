@@ -9,10 +9,10 @@ router.get("/", (req, res) => {
 
 router.get("/login", (req, res) => {
   if (req.isAuthenticated()) {
-    res.redirect("/game");
+    return res.redirect("/game");
   }
   const errorMessage = req.flash("error");
-  res.render("login", { errorMessage });
+  return res.render("login", { errorMessage });
 });
 
 app.post(
@@ -80,7 +80,7 @@ router.get("/game", async (req, res) => {
   const user = req.user;
   let game = await Game.findOne({
     status: "ongoing",
-    $where: "this.players.length === 1",
+    players: { $size: 1 },
   });
 
   if (game) {
@@ -147,6 +147,13 @@ router.get("/game", async (req, res) => {
 
   game = await game.populate("players");
   return res.render("game", { user, game });
+});
+
+router.get("/profile", async (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect("/login");
+  const user = req.user;
+  console.log(user);
+  res.render("profile", { user });
 });
 
 module.exports = router;

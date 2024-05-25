@@ -5,17 +5,91 @@
   <script>
     const socket = io();
     socket.on("game", (game) => {
+      const mePlayerId = JSON.parse(`<%- JSON.stringify(user) %>`)._id;
+      const player0MonsterCount = game.grid
+        .flat()
+        .filter(
+          (cell) => cell.monster && cell.monster.player === game.players[0]._id
+        ).length;
+      const player1MonsterCount = game.grid
+        .flat()
+        .filter(
+          (cell) => cell.monster && cell.monster.player === game.players[1]._id
+        ).length;
+
+      const resultBg = document.querySelector("#resultBg");
+      const resultDiv = document.querySelector("#resultDiv");
+
+      if (player0MonsterCount === 0 || player1MonsterCount === 0) {
+        if (player0MonsterCount === 0 && player1MonsterCount === 0) {
+          resultBg.style.display = "block";
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `<h1 style="color: white; background: #ccc; padding: 1rem">Draw!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
+        } else if (
+          player0MonsterCount === 0 &&
+          game.players[0]._id === mePlayerId
+        ) {
+          resultBg.style.display = "block";
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `<h1 style="color: white; background: red; padding: 1rem">You lost!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
+        } else if (
+          player1MonsterCount === 0 &&
+          game.players[1]._id === mePlayerId
+        ) {
+          resultBg.style.display = "block";
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `<h1 style="color: white; background: red; padding: 1rem">You Lost!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
+        } else if (
+          player0MonsterCount === 0 &&
+          game.players[1]._id === mePlayerId
+        ) {
+          resultBg.style.display = "block";
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `<h1 style="color: white; background: green; padding: 1rem">You won!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
+        } else if (
+          player1MonsterCount === 0 &&
+          game.players[0]._id === mePlayerId
+        ) {
+          resultBg.style.display = "block";
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `<h1 style="color: white; background: green; padding: 1rem">You won!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
+        }
+        socket.emit("result", {
+          gameId: game._id,
+          players: game.players.map((player) => player._id),
+          winner:
+            player0MonsterCount === 0 && player1MonsterCount === 0
+              ? null
+              : player0MonsterCount === 0
+              ? game.players[1]._id
+              : game.players[0]._id,
+        });
+      }
+
       const playersList = document.querySelector("#playersList");
       playersList.innerHTML = `
-        <h3 style="padding: .5rem 1rem; color: white; background: blue">${
-          game.players[0].name
-        }
-          ${game.turn === game.players[0]._id ? "<span>TURN</span>" : ""}
+        <h3 style="color: white; background: blue; ${
+          game.turn === game.players[0]._id
+            ? "padding: .5rem 1rem;"
+            : "padding: .3rem .8rem;"
+        }">${game.players[0].name}
+          ${
+            game.turn === game.players[0]._id
+              ? `<span style="font-size: 1rem"> (T) </span>`
+              : ""
+          }
         </h3>
-        <h3 style="padding: .5rem 1rem; color: white; background: green">${
-          game.players[1].name
+        <h3 style="color: white; background: green; ${
+          game.turn === game.players[1]._id
+            ? "padding: .5rem 1rem;"
+            : "padding: .3rem .8rem;"
         }
-          ${game.turn === game.players[1]._id ? "<span>TURN</span>" : ""}
+        ">${game.players[1].name}
+          ${
+            game.turn === game.players[1]._id
+              ? `<span style="font-size: 1rem"> (T) </span>`
+              : ""
+          }
         </h3>
       `;
 
@@ -59,13 +133,56 @@
             otherPlayerId
           ).includes(cell)
         ) {
-          game.grid[x][y].monster =
+          const fromMonster =
             game.grid[Number(selectedCell.dataset.x)][
               Number(selectedCell.dataset.y)
             ].monster;
-          game.grid[Number(selectedCell.dataset.x)][
-            Number(selectedCell.dataset.y)
-          ].monster = null;
+          const toMonster = game.grid[x][y].monster;
+          if (!toMonster) {
+            game.grid[x][y].monster = fromMonster;
+            game.grid[Number(selectedCell.dataset.x)][
+              Number(selectedCell.dataset.y)
+            ].monster = null;
+          } else {
+            if (
+              (fromMonster.type === "vampire" &&
+                toMonster.type === "werewolf") ||
+              (fromMonster.type === "werewolf" && toMonster.type === "vampire")
+            ) {
+              game.grid[x][y].monster = [fromMonster, toMonster].find(
+                (monster) => monster.type === "vampire"
+              );
+              game.grid[Number(selectedCell.dataset.x)][
+                Number(selectedCell.dataset.y)
+              ].monster = null;
+            } else if (
+              (fromMonster.type === "werewolf" && toMonster.type === "ghost") ||
+              (fromMonster.type === "ghost" && toMonster.type === "werewolf")
+            ) {
+              game.grid[x][y].monster = [fromMonster, toMonster].find(
+                (monster) => monster.type === "werewolf"
+              );
+              game.grid[Number(selectedCell.dataset.x)][
+                Number(selectedCell.dataset.y)
+              ].monster = null;
+            } else if (
+              (fromMonster.type === "ghost" && toMonster.type === "vampire") ||
+              (fromMonster.type === "vampire" && toMonster.type === "ghost")
+            ) {
+              game.grid[x][y].monster = [fromMonster, toMonster].find(
+                (monster) => monster.type === "ghost"
+              );
+              game.grid[Number(selectedCell.dataset.x)][
+                Number(selectedCell.dataset.y)
+              ].monster = null;
+            } else if (fromMonster.type === toMonster.type) {
+              game.grid[x][y].monster = null;
+              game.grid[Number(selectedCell.dataset.x)][
+                Number(selectedCell.dataset.y)
+              ].monster = null;
+            }
+          }
+
           game.turn = otherPlayerId;
 
           socket.emit("game", {
@@ -244,6 +361,8 @@
       <h3 id="waiting-message" style="display: block">
         New game started! Waiting for another player...
       </h3>
+      <div id="resultBg"></div>
+      <div id="resultDiv"></div>
       <div id="grid" style="display: none"></div>
     </div>
   </body>

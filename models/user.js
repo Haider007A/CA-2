@@ -21,6 +21,10 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+  gamesDrawn: {
+    type: Number,
+    default: 0,
+  },
   dateCreated: {
     type: Date,
     default: Date.now,

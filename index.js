@@ -64,4 +64,33 @@ io.on("connection", (socket) => {
   socket.on("game", ({ gameId, game }) => {
     io.to(gameId).emit("game", game);
   });
+  socket.on("result", ({ gameId, players, winner }) => {
+    updatePlayers(players, winner);
+    updateGame(gameId);
+  });
 });
+
+async function updatePlayers(players, winner) {
+  const player0 = await User.findById(players[0]);
+  const player1 = await User.findById(players[1]);
+  if (winner) {
+    if (winner === players[0]) {
+      player0.gamesWon++;
+      player1.gamesLost++;
+    } else {
+      player1.gamesWon++;
+      player0.gamesLost++;
+    }
+  } else {
+    player0.gamesDrawn++;
+    player1.gamesDrawn++;
+  }
+  await player0.save();
+  await player1.save();
+}
+
+async function updateGame(gameId) {
+  const game = await Game.findById(gameId);
+  game.status = "finished";
+  await game.save();
+}
