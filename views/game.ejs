@@ -4,6 +4,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    // Listen for game moves
     socket.on("game", (game) => {
       const mePlayerId = JSON.parse(`<%- JSON.stringify(user) %>`)._id;
       const player0MonsterCount = game.grid
@@ -52,6 +53,7 @@
           resultDiv.style.display = "block";
           resultDiv.innerHTML = `<h1 style="color: white; background: green; padding: 1rem">You won!</h1><a href="/game">Play again</a> <a href="/profile">Go to profile</a>`;
         }
+        // Emit result to server to save in database
         socket.emit("result", {
           gameId: game._id,
           players: game.players.map((player) => player._id),
@@ -104,7 +106,7 @@
           ? `<img src="/images/${gameGrid[x][y].monster.type}.png" style="width: 100%; height: 100%; object-fit: contain" />`
           : "";
       });
-      // Function to handle cell click
+      // Function to handle cell click event
       function handleCellClick(event) {
         const mePlayerId = JSON.parse(`<%- JSON.stringify(user) %>`)._id;
         if (game.turn !== mePlayerId) return;
@@ -178,6 +180,7 @@
             }
           }
           game.turn = otherPlayerId;
+          // Emit game to server to update in database
           socket.emit("game", {
             gameId: game._id,
             game,
@@ -200,6 +203,7 @@
         pathCell.style.boxShadow = "0 0 10px 5px yellow";
       });
     }
+    // Function to hide path where monster can move
     function hidePath() {
       const cells = document.querySelectorAll(".cell");
       cells.forEach((cell) => {
@@ -313,6 +317,7 @@
       }
       return pathCells;
     }
+    // Emit joinGame event to server to join game
     document.addEventListener("DOMContentLoaded", () => {
       const grid = document.querySelector("#grid");
       const game = JSON.parse(`<%- JSON.stringify(game) %>`);
@@ -333,6 +338,7 @@
         });
       }
     });
+    // Function to render grid or waiting message based on players count
     function renderGridOrWaitingMessage() {
       const gridContainer = document.querySelector("#grid");
       const waitingMessage = document.querySelector("#waiting-message");

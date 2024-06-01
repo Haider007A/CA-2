@@ -13,6 +13,8 @@ require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 const mongoConnect = require("./mongoConnect");
 const Game = require("./models/game");
+
+// Connect to MongoDB
 mongoConnect();
 
 app = express();
@@ -21,6 +23,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Session store
 const store = new MongoDBStore({
   mongoUrl: process.env.MONGO_URI,
   collection: "sessions",
@@ -55,8 +58,10 @@ server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}. http://localhost:${PORT}/`);
 });
 
+// Socket.io
 const io = new Server(server);
 
+// Socket.io events
 io.on("connection", (socket) => {
   socket.on("joinGame", ({ gameId }) => {
     socket.join(gameId);
@@ -70,6 +75,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// Update players' status after game ends
 async function updatePlayers(players, winner) {
   const player0 = await User.findById(players[0]);
   const player1 = await User.findById(players[1]);
@@ -89,6 +95,7 @@ async function updatePlayers(players, winner) {
   await player1.save();
 }
 
+// Update game status after game ends
 async function updateGame(gameId) {
   const game = await Game.findById(gameId);
   game.status = "finished";

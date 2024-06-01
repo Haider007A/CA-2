@@ -3,10 +3,12 @@ const passport = require("passport");
 const User = require("./models/user");
 const Game = require("./models/game");
 
+// Route to render the homepage
 router.get("/", (req, res) => {
   res.render("index");
 });
 
+// Route to render the login page
 router.get("/login", (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect("/game");
@@ -15,6 +17,7 @@ router.get("/login", (req, res) => {
   return res.render("login", { errorMessage });
 });
 
+// Route to handle login
 app.post(
   "/login",
   passport.authenticate("local", {
@@ -27,6 +30,7 @@ app.post(
   }
 );
 
+// Route to handle logout
 router.get("/logout", (req, res) => {
   req.logout((err) => {
     if (err) {
@@ -36,6 +40,7 @@ router.get("/logout", (req, res) => {
   });
 });
 
+// Route to render the register page
 router.get("/register", (req, res) => {
   if (req.isAuthenticated()) res.redirect("/game");
   res.render("register", {
@@ -43,6 +48,7 @@ router.get("/register", (req, res) => {
   });
 });
 
+// Route to handle registration
 router.post("/register", (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect("/game");
@@ -51,6 +57,8 @@ router.post("/register", (req, res) => {
     name: req.body.name,
     username: req.body.username,
   });
+  
+  // Register the user with passport
   User.register(newUser, req.body.password, (err) => {
     if (err) {
       if (err.name === "MissingUsernameError") {
@@ -75,9 +83,11 @@ router.post("/register", (req, res) => {
   });
 });
 
+// Route to render the game page
 router.get("/game", async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
   const user = req.user;
+  // Find an ongoing game with only one player
   let game = await Game.findOne({
     status: "ongoing",
     players: { $size: 1 },
@@ -149,6 +159,7 @@ router.get("/game", async (req, res) => {
   return res.render("game", { user, game });
 });
 
+// Route to handle game moves
 router.get("/profile", async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
   const user = req.user;
