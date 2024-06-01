@@ -117,7 +117,7 @@ router.get("/game", async (req, res) => {
   if (game.players.length === 2) {
     const monsterTypes = ["vampire", "werewolf", "ghost"];
     // placing monsters for player 1
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       const row = 0;
       const randomCol = Math.floor(Math.random() * 10);
       if (!game.grid[row][randomCol].monster) {
@@ -133,7 +133,7 @@ router.get("/game", async (req, res) => {
     }
 
     // placing monsters for player 2
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       const row = 9;
       const randomCol = Math.floor(Math.random() * 10);
       if (!game.grid[row][randomCol].monster) {
