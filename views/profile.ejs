@@ -1,17 +1,22 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <%- include("partials/head.ejs") %>
   <body>
     <%- include("partials/header.ejs") %>
     <div class="container">
-      <p>Profile</p>
-      <p>Name: <%= user.name %></p>
-      <p>Username: <%= user.username %></p>
-      <p>
-        Games completed: <%= user.gamesWon + user.gamesLost + user.gamesDrawn %>
-      </p>
-      <p>Games won: <%= user.gamesWon %></p>
-      <p>Games lost: <%= user.gamesLost %></p>
-      <p>Games drawn: <%= user.gamesDrawn %></p>
+      <div class="profile-card">
+        <h2>Profile</h2>
+        <div class="profile-info">
+          <p><strong>Name:</strong> <%= user.name %></p>
+          <p><strong>Username:</strong> <%= user.username %></p>
+          <p>
+            <strong>Games completed:</strong> <%= user.gamesWon + user.gamesLost + user.gamesDrawn %>
+          </p>
+          <p><strong>Games won:</strong> <%= user.gamesWon %></p>
+          <p><strong>Games lost:</strong> <%= user.gamesLost %></p>
+          <p><strong>Games drawn:</strong> <%= user.gamesDrawn %></p>
+        </div>
+      </div>
     </div>
   </body>
 </html>
