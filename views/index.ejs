@@ -1,8 +1,49 @@
 <html>
   <%- include("partials/head.ejs") %>
+  <style>
+     h1 {
+      margin-bottom: 20px;
+      color: #ff0000;
+      font-size: 50px;
+      font-family: Tahoma, Verdana, sans-serif  ;
+      font-weight: bold;
+      text-shadow: 2px #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: glow 0.5s infinite alternate;
+   }
+    h2{
+      margin-bottom: 20px;
+      color:#008000;
+      font-size: 30px;
+      font-family: Arial, Helvetica, sans-serif ;
+      font-style: Italic;
+      font-weight: bold;
+      text-shadow:  2px #aaa;
+      display: flex;
+      justify-content: center;
+      animation: glow 0.5s infinite alternate;
+    }
+   @keyframes glow {
+     from { text-shadow: 2px 2px #aaa; }
+      to { text-shadow: 4px 4px 10px #aaa; }
+    }
+    a{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
   <body>
     <%- include("partials/header.ejs") %>
     <h1>Welcome to the Monster Mayhem!</h1>
     <a href="/game">Play Game</a>
+  </body>
+
+  <body>
+    <h2>
+         Author: Muhammad Sajjad Haider 2021384
+    </h2>
   </body>
 </html>
